@@ -20,12 +20,22 @@ blink at different speeds and intensities.
 The repository contains two tools: `anker-mouse-replayer` and
 `anker-mouse-light`.
 
-The former is an exploratory tool developed while trying to imitate
-the commands sent by the original Windows tool.
+### `anker-mouse-replayer`
 
-The latter is a tool that allows setting the current profile's device
-light without having to reconnect the device, and can possibly be used
-to signal to the user.
+An exploratory tool developed while trying to imitate the commands
+sent by the original Windows tool. It is not designed for cleanliness,
+but rather for an ease of changing the data in the reports.
+
+### `anker-mouse-light`
+
+Allows setting the current device light parameters (color, brightness,
+breath speed).
+
+These settings are temporary and not saved onto the device profile,
+and will be reset ot the profile value once the device is
+disconnected.
+
+This can be used for signalling information to the user.
 
 ## Author
 
