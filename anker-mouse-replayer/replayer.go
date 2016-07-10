@@ -7,10 +7,10 @@
 // modify, merge, publish, distribute, sublicense, and/or sell copies
 // of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -24,9 +24,9 @@ package main
 
 import (
 	"flag"
+	"github.com/GeertJohan/go.hid"
 	colorful "github.com/lucasb-eyer/go-colorful"
 	"log"
-	"github.com/GeertJohan/go.hid"
 )
 
 var (
@@ -56,16 +56,20 @@ func main() {
 		log.Fatal(err)
 	}
 
-	SetColor(c)
-	SetBrightness(byte(*brightness))
-	SetBreathSpeed(byte(*breathSpeed))
-
 	device, err := hid.Open(HoltekVendorId, AnkerMouseDeviceId, "")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = WriteConfig(device)
+	cfg := NewConfig()
+	cfg.Profiles[0].LightProfile.SetColor(c)
+	cfg.Profiles[0].LightProfile.Brightness = byte(*brightness)
+	cfg.Profiles[0].LightProfile.BreathSpeed = byte(*breathSpeed)
+	cfg.Profiles[1].LightProfile.SetColor(c)
+	cfg.Profiles[1].LightProfile.Brightness = byte(*brightness)
+	cfg.Profiles[1].LightProfile.BreathSpeed = byte(*breathSpeed)
+
+	err = cfg.Write(device)
 	if err != nil {
 		log.Fatal(err)
 	}
