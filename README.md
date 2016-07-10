@@ -17,9 +17,6 @@ blink at different speeds and intensities.
 
 ## Tools
 
-The repository contains two tools: `anker-mouse-replayer` and
-`anker-mouse-light`.
-
 ### `anker-mouse-replayer`
 
 An exploratory tool developed while trying to imitate the commands
@@ -36,6 +33,10 @@ and will be reset ot the profile value once the device is
 disconnected.
 
 This can be used for signalling information to the user.
+
+### `anker-mouse-profile`
+
+Allows switching between the two configured profiles in the device.
 
 ## Author
 
