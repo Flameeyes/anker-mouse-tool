@@ -24,15 +24,17 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/GeertJohan/go.hid"
 	colorful "github.com/lucasb-eyer/go-colorful"
 	"log"
+	"strconv"
+	"strings"
 )
 
 var (
-	lightColor  = flag.String("light_color", "#0000ff", "Colour to set the light to.")
-	brightness  = flag.Int("brightness", 2, "Brightness of the device light, between 0 and 3 (0 means off.")
-	breathSpeed = flag.Int("breath_speed", 0, "Speed of the \"breath\" of the device light, between 0 and 3 (0 means the light stays always-on.)")
+	profile1Light = flag.String("profile1_light", "#0000ff:2:0", "String as color:brightness:breath for the light for profile #1.")
+	profile2Light = flag.String("profile2_light", "#00ff00:2:0", "String as color:brightness:breath for the light for profile #2.")
 )
 
 const (
@@ -40,20 +42,41 @@ const (
 	AnkerMouseDeviceId = 0xfa50
 )
 
+func parseLightFlag(v string) (*colorful.Color, byte, byte, error) {
+	p := strings.Split(v, ":")
+	if len(p) != 3 {
+		return nil, 0, 0, fmt.Errorf("Invalid profile light setting: %v", v)
+	}
+
+	c, err := colorful.Hex(p[0])
+	if err != nil {
+		return nil, 0, 0, err
+	}
+
+	bright, err := strconv.Atoi(p[1])
+	if err != nil {
+		return nil, 0, 0, err
+	}
+
+	breath, err := strconv.Atoi(p[2])
+	if err != nil {
+		return nil, 0, 0, err
+	}
+
+	return &c, byte(bright), byte(breath), nil
+}
+
 func main() {
 	flag.Parse()
 
-	if *brightness < 0 || *brightness > 3 {
-		log.Fatalf("Invalid value for -brightness: %v", *brightness)
-	}
-
-	if *breathSpeed < 0 || *breathSpeed > 3 {
-		log.Fatalf("Invalid value for -breath_speed: %v", *breathSpeed)
-	}
-
-	c, err := colorful.Hex(*lightColor)
+	c1, bright1, breath1, err := parseLightFlag(*profile1Light)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Invalid value for -profile1_light: %v", err)
+	}
+
+	c2, bright2, breath2, err := parseLightFlag(*profile2Light)
+	if err != nil {
+		log.Fatalf("Invalid value for -profile2_light: %v", err)
 	}
 
 	device, err := hid.Open(HoltekVendorId, AnkerMouseDeviceId, "")
@@ -62,12 +85,12 @@ func main() {
 	}
 
 	cfg := NewConfig()
-	cfg.Profiles[0].LightProfile.SetColor(c)
-	cfg.Profiles[0].LightProfile.Brightness = byte(*brightness)
-	cfg.Profiles[0].LightProfile.BreathSpeed = byte(*breathSpeed)
-	cfg.Profiles[1].LightProfile.SetColor(c)
-	cfg.Profiles[1].LightProfile.Brightness = byte(*brightness)
-	cfg.Profiles[1].LightProfile.BreathSpeed = byte(*breathSpeed)
+	cfg.Profiles[0].LightProfile.SetColor(*c1)
+	cfg.Profiles[0].LightProfile.Brightness = bright1
+	cfg.Profiles[0].LightProfile.BreathSpeed = breath1
+	cfg.Profiles[1].LightProfile.SetColor(*c2)
+	cfg.Profiles[1].LightProfile.Brightness = bright2
+	cfg.Profiles[1].LightProfile.BreathSpeed = breath2
 
 	err = cfg.Write(device)
 	if err != nil {
