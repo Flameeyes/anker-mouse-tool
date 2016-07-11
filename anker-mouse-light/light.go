@@ -23,10 +23,8 @@
 package main
 
 import (
-	"bytes"
-	"encoding/binary"
 	"flag"
-	"github.com/GeertJohan/go.hid"
+	"github.com/flameeyes/anker-mouse-tool/device"
 	colorful "github.com/lucasb-eyer/go-colorful"
 	"log"
 )
@@ -35,11 +33,6 @@ var (
 	lightColor  = flag.String("light_color", "#0000ff", "Colour to set the light to.")
 	brightness  = flag.Int("brightness", 2, "Brightness of the device light, between 0 and 3 (0 means off.")
 	breathSpeed = flag.Int("breath_speed", 0, "Speed of the \"breath\" of the device light, between 0 and 3 (0 means the light stays always-on.)")
-)
-
-const (
-	HoltekVendorId     = 0x04d9
-	AnkerMouseDeviceId = 0xfa50
 )
 
 type SetLightReport struct {
@@ -69,7 +62,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	device, err := hid.Open(HoltekVendorId, AnkerMouseDeviceId, "")
+	dev, err := device.Open()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -86,13 +79,7 @@ func main() {
 		BreathSpeed:  byte(*breathSpeed),
 	}
 
-	buf := new(bytes.Buffer)
-	err = binary.Write(buf, binary.LittleEndian, report)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	_, err = device.SendFeatureReport(buf.Bytes())
+	err = dev.WriteFeatureReport(report)
 	if err != nil {
 		log.Fatal(err)
 	}
