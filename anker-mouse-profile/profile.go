@@ -32,22 +32,6 @@ var (
 	profile = flag.Int("profile", 1, "Select profile 1 or 2 of the mouse.")
 )
 
-type SetProfileReport1 struct {
-	ReportId  byte    // 0x02
-	Constant1 [7]byte // 0x02, 0x40, 0x00, 0x01, 0x00, 0xFA, 0xFA
-	Profile   byte
-	Unknown   [7]byte // All zeroes.
-}
-
-var SetProfile1Constant1 = [7]byte{0x02, 0x40, 0x00, 0x01, 0x00, 0xFA, 0xFA}
-
-type SetProfileReport2 struct {
-	ReportId  byte   // 0x02
-	Constant1 uint16 // 0x0101
-	Profile   byte
-	Unknown   [12]byte // All zeroes.
-}
-
 func main() {
 	flag.Parse()
 
@@ -61,25 +45,7 @@ func main() {
 	}
 
 	profileId := byte(*profile) - 1
-
-	report1 := SetProfileReport1{
-		ReportId:  0x02,
-		Constant1: SetProfile1Constant1,
-		Profile:   profileId,
-	}
-
-	err = dev.WriteFeatureReport(report1)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	report2 := SetProfileReport2{
-		ReportId:  0x02,
-		Constant1: 0x0101,
-		Profile:   profileId,
-	}
-
-	err = dev.WriteFeatureReport(report2)
+	err = dev.SetProfile(profileId)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -22,62 +22,57 @@
 
 package device
 
-import (
-	"bytes"
-	"encoding/binary"
-	"github.com/GeertJohan/go.hid"
-	colorful "github.com/lucasb-eyer/go-colorful"
-)
-
-const (
-	HoltekVendorId     = 0x04d9
-	AnkerMouseDeviceId = 0xfa50
-)
-
-type Device struct {
-	hiddev *hid.Device
+type SetLightReport struct {
+	reportId     byte // 0x02
+	internalId   byte // 0x04
+	InverseRed   byte
+	InverseGreen byte
+	InverseBlue  byte
+	Brightness   byte
+	BreathSpeed  byte
+	unknown      [9]byte // All zeroes.
 }
 
-func Open() (*Device, error) {
-	d, err := hid.Open(HoltekVendorId, AnkerMouseDeviceId, "")
-	if err != nil {
-		return nil, err
+func newSetLightReport(r, g, b, brightness, breathSpeed byte) *SetLightReport {
+	return &SetLightReport{
+		reportId:     0x02,
+		internalId:   0x04,
+		InverseRed:   ^r,
+		InverseGreen: ^g,
+		InverseBlue:  ^b,
+		Brightness:   brightness,
+		BreathSpeed:  breathSpeed,
 	}
-
-	return &Device{
-		hiddev: d,
-	}, nil
 }
 
-func (self *Device) WriteFeatureReport(report interface{}) error {
-	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, report)
-	if err != nil {
-		return err
-	}
-
-	_, err = self.hiddev.SendFeatureReport(buf.Bytes())
-	if err != nil {
-		return err
-	}
-
-	return nil
+type setProfileReport1 struct {
+	reportId  byte    // 0x02
+	constant1 [7]byte // 0x02, 0x40, 0x00, 0x01, 0x00, 0xFA, 0xFA
+	Profile   byte
+	unknown   [7]byte // All zeroes.
 }
 
-func (self *Device) SetLight(c colorful.Color, brightness, breathspeed byte) error {
-	r, g, b := c.RGB255()
+var setProfile1Constant1 = [7]byte{0x02, 0x40, 0x00, 0x01, 0x00, 0xFA, 0xFA}
 
-	report := newSetLightReport(r, g, b, brightness, breathspeed)
-	return self.WriteFeatureReport(report)
+type setProfileReport2 struct {
+	reportId  byte   // 0x02
+	constant1 uint16 // 0x0101
+	Profile   byte
+	unknown   [12]byte // All zeroes.
 }
 
-func (self *Device) SetProfile(profileId byte) rror {
-	r1, r2 := newSetProfileReports(profileId)
-
-	err := self.WriteFeatureReport(r1)
-	if err != nil {
-		return err
+func newSetProfileReports(byte profileId) (*setProfileReport1, *setProfileReport2) {
+	r1 := setProfileReport1{
+		reportId:  0x02,
+		constant1: setProfile1Constant1,
+		Profile:   profileId,
 	}
 
-	return self.WriteFeatureReport(r2)
+	r2 := setProfileReport2{
+		reportId:  0x02,
+		constant1: 0x0101,
+		Profile:   profileId,
+	}
+
+	return &r1, &r2
 }

@@ -35,17 +35,6 @@ var (
 	breathSpeed = flag.Int("breath_speed", 0, "Speed of the \"breath\" of the device light, between 0 and 3 (0 means the light stays always-on.)")
 )
 
-type SetLightReport struct {
-	ReportId     byte // 0x02
-	InternalId   byte // 0x04
-	InverseRed   byte
-	InverseGreen byte
-	InverseBlue  byte
-	Brightness   byte
-	BreathSpeed  byte
-	Unknown      [9]byte // All zeroes.
-}
-
 func main() {
 	flag.Parse()
 
@@ -67,19 +56,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	r, g, b := c.RGB255()
-
-	report := SetLightReport{
-		ReportId:     0x02,
-		InternalId:   0x04,
-		InverseRed:   ^r,
-		InverseGreen: ^g,
-		InverseBlue:  ^b,
-		Brightness:   byte(*brightness),
-		BreathSpeed:  byte(*breathSpeed),
-	}
-
-	err = dev.WriteFeatureReport(report)
+	err = dev.SetLight(c, byte(*brightness), byte(*breathSpeed))
 	if err != nil {
 		log.Fatal(err)
 	}
