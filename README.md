@@ -40,6 +40,6 @@ Allows switching between the two configured profiles in the device.
 
 ## Author
 
-Diego Elio Pettenò <flameeyes@flameeyes.eu>
+Diego Elio Pettenò <flameeyes@flameeyes.com>
 
 [licence]: https://opensource.org/licenses/mit-license.php

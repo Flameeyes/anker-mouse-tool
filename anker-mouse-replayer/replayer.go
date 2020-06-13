@@ -1,4 +1,4 @@
-// Copyright 2016 Diego Elio Pettenò <flameeyes@flameeyes.eu>
+// Copyright 2016 Diego Elio Pettenò <flameeyes@flameeyes.com>
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
